@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
-#include<algorithm>
+#include <algorithm>
 
-std::vector<std::vector<int>> MergeIntervals(std::vector<std::vector<int>>& arr)
+std::vector<std::vector<int>> mergeIntervals(std::vector<std::vector<int>>& arr)
 {
     int n= arr.size();
     sort(arr.begin(), arr.end());
@@ -35,7 +35,7 @@ int main()
         std::cin>> arr[i][0]>>arr[i][1];
     }
 
-    std::vector<std::vector<int>> result= MergeIntervals(arr);
+    std::vector<std::vector<int>> result= mergeIntervals(arr);
 
     for(int i=0; i < result.size(); i++)
     {
