@@ -1,7 +1,7 @@
 #include <vector>
 #include <algorithm>
 #include <climits>
-#include<iostream>
+#include <iostream>
 
 class Solution
 {
