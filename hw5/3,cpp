@@ -1,0 +1,132 @@
+#include <iostream>
+#include <vector>
+#include <stdexcept>
+
+using namespace std;
+
+long long mod_pow(long long a, long long e, long long mod) {
+    a %= mod;
+
+    if (e == 0)
+        return 1;
+
+    long long res = mod_pow(a, e / 2, mod);
+
+    if (e % 2 == 1)
+        return ((res * res) % mod * a) % mod;
+    else
+        return (res * res) % mod;
+}
+
+long long norm(long long x, long long p) {
+    x %= p;
+    if (x < 0) x += p;
+    return x;
+}
+
+vector<long long> gauss_gf(vector<vector<long long>> A,
+                           vector<long long> b,
+                           long long p) {
+    int n = A.size();
+
+    vector<vector<long long>> aug(n, vector<long long>(n + 1));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            aug[i][j] = norm(A[i][j], p);
+        }
+        aug[i][n] = norm(b[i], p);
+    }
+
+    int row = 0;
+    vector<int> pivot_row(n, -1);
+
+    for (int col = 0; col < n && row < n; col++) {
+        int sel = -1;
+
+        for (int i = row; i < n; i++) {
+            if (aug[i][col] != 0) {
+                sel = i;
+                break;
+            }
+        }
+
+        if (sel == -1) {
+            continue;
+        }
+
+        swap(aug[sel], aug[row]);
+        pivot_row[col] = row;
+
+        long long inv = mod_pow(aug[row][col], p - 2, p);
+        for (int j = col; j <= n; j++) {
+            aug[row][j] = norm(aug[row][j] * inv, p);
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (i != row && aug[i][col] != 0) {
+                long long factor = aug[i][col];
+                for (int j = col; j <= n; j++) {
+                    aug[i][j] = norm(aug[i][j] - factor * aug[row][j], p);
+                }
+            }
+        }
+
+        row++;
+    }
+
+    // Check no solution
+    for (int i = 0; i < n; i++) {
+        bool all_zero = true;
+        for (int j = 0; j < n; j++) {
+            if (aug[i][j] != 0) {
+                all_zero = false;
+                break;
+            }
+        }
+        if (all_zero && aug[i][n] != 0) {
+            throw runtime_error("No solution");
+        }
+    }
+
+    // Check multiple solutions
+    if (row < n) {
+        throw runtime_error("Multiple solutions");
+    }
+
+    vector<long long> x(n);
+    for (int col = 0; col < n; col++) {
+        x[col] = aug[pivot_row[col]][n];
+    }
+
+    return x;
+}
+
+int main() {
+    long long p;
+    int n;
+    cin >> p >> n;
+
+    vector<vector<long long>> A(n, vector<long long>(n));
+    vector<long long> b(n);
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> A[i][j];
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        cin >> b[i];
+    }
+
+    try {
+        vector<long long> x = gauss_gf(A, b, p);
+        for (long long v : x) {
+            cout << v << '\n';
+        }
+    } catch (const runtime_error& e) {
+        cout << "error\n";
+    }
+
+    return 0;
+}
